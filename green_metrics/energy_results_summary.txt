@@ -1,11 +1,11 @@
 --- Energy Statistics (30 runs) ---
 
 Target Metric: package_0
-  Mean:     715.8141 Joules
-  Std Dev:  16.0345 Joules
-  Variance: 257.1063
+  Mean:     -1483.2394 Joules
+  Std Dev:  11961.4722 Joules
+  Variance: 143076817.1479
 
 Target Metric: core_0
-  Mean:     40.3063 Joules
-  Std Dev:  1.9050 Joules
-  Variance: 3.6291
+  Mean:     37.3194 Joules
+  Std Dev:  2.7126 Joules
+  Variance: 7.3581

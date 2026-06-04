@@ -1,1 +1,16 @@
 --- Top 15 Manim Code Bottlenecks ---
+[06/04/26 17:04:25] INFO Caching disabled. cairo_renderer.py:83
+[06/04/26 17:04:49] INFO Animation 0 : Partial movie file written in scene_file_writer.py:601
+INFO Caching disabled. cairo_renderer.py:83
+[06/04/26 17:04:50] INFO Animation 1 : Partial movie file written in scene_file_writer.py:601
+INFO Combining to Movie file. scene_file_writer.py:753
+INFO scene_file_writer.py:904
+INFO Rendered HeavyScene scene.py:278
+150500 4.202 0.000 8.984 0.000 camera.py:698(set_cairo_context_path)
+1214000 1.750 0.000 1.787 0.000 bezier.py:1032(interpolate)
+1204000 1.308 0.000 1.667 0.000 vectorized_mobject.py:1276(consider_points_equals_2d)
+772236/159236 0.699 0.000 1.626 0.000 mobject.py:2499(get_family)
+773052 0.647 0.000 0.987 0.000 iterables.py:257(remove_list_redundancies)
+151000 0.572 0.000 3.364 0.000 vectorized_mobject.py:1894(interpolate_color)
+301000 0.504 0.000 0.627 0.000 camera.py:732(set_cairo_context_color)
+151500 0.437 0.000 2.603 0.000 vectorized_mobject.py:1334(_gen_subpaths_from_points)
