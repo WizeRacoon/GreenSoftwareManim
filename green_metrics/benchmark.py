@@ -7,11 +7,16 @@ csv_handler = CSVHandler('baseline_energy.csv')
 
 @measure_energy(handler=csv_handler)
 def render_scene():
-    # Replace 'my_scenes.py' and 'HeavyScene' with your chosen benchmarks
-    # The '-qh' flag renders at lower quality for faster iterations during testing, 
-    # but you should use '-qh' (high quality) for your final data gathering.
+    # Renders high quality (-qh) with no caching to ensure maximum CPU load
     subprocess.run(["manim", "-qh", "--disable_caching", "my_scenes.py", "HeavyScene"], check=True)
 
 if __name__ == "__main__":
-    render_scene()
+    NUM_RUNS = 30
+    print(f"Starting {NUM_RUNS} benchmark runs for statistical significance...")
+    
+    for i in range(NUM_RUNS):
+        print(f"Run {i+1} of {NUM_RUNS}...")
+        render_scene()
+        
     csv_handler.save_data()
+    print("Done! Data saved to baseline_energy.csv")
