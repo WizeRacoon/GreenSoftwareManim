@@ -38,9 +38,9 @@ def compare_energy(baseline_csv, optimized_csv):
         t_stat, p_val = stats.ttest_ind(base_data, opt_data, equal_var=False)
         
         print("\n=== GREEN SOFTWARE RESULTS (FILTERED) ===")
-        print(f"Data Cleaning:  Removed {base_dropped} baseline outliers and {opt_dropped} baseline_2 outliers.")
+        print(f"Data Cleaning:  Removed {base_dropped} baseline outliers and {opt_dropped} optimized outliers.")
         print(f"Baseline Mean:  {base_mean:.2f} J")
-        print(f"Baseline_2 Mean: {opt_mean:.2f} J")
+        print(f"Optimized Mean: {opt_mean:.2f} J")
         print(f"Energy Saved:   {energy_saved:.2f} J per run ({percent_saved:.2f}%)")
         print(f"P-Value:        {p_val:.4e}")
         
