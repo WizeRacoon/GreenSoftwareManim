@@ -1,2 +1,18 @@
---- Top 15 Manim Code Bottlenecks ---
-         1    0.000    0.000    0.000    0.000  manim_colors.py:1(<module>)
+--- Top 15 Global Code Bottlenecks (Unfiltered) ---
+   N-Calls  TotTime  PerCall  CumTime  PerCall  Source Location
+------------------------------------------------------------------------------------------
+    150500    4.114    0.000    8.851    0.000  camera.py:698(set_cairo_context_path)
+    150500    2.778    0.000    2.778    0.000  {method 'stroke_preserve' of 'cairo.Context' objects}
+       360    2.013    0.006    2.115    0.006  {av.video.frame.from_ndarray}
+   1214000    1.357    0.000    1.388    0.000  bezier.py:1032(interpolate)
+   1204000    1.296    0.000    1.645    0.000  vectorized_mobject.py:1276(consider_points_equals_2d)
+     44707    0.763    0.000    0.763    0.000  {built-in method numpy.array}
+772236/159236    0.737    0.000    1.644    0.000  mobject.py:2499(get_family)
+    773052    0.633    0.000    0.970    0.000  iterables.py:257(remove_list_redundancies)
+   1053500    0.554    0.000    1.974    0.000  vectorized_mobject.py:1381(<lambda>)
+       362    0.541    0.001    0.567    0.002  {method 'encode' of 'av.video.stream.VideoStream' objects}
+    151000    0.535    0.000    2.919    0.000  vectorized_mobject.py:1894(interpolate_color)
+    301000    0.494    0.000    0.613    0.000  camera.py:732(set_cairo_context_color)
+    151500    0.443    0.000    2.600    0.000  vectorized_mobject.py:1334(_gen_subpaths_from_points)
+       301    0.396    0.001   12.539    0.042  camera.py:660(display_multiple_non_background_colored_vmobjects)
+    191528    0.390    0.000    0.390    0.000  {method 'reduce' of 'numpy.ufunc' objects}

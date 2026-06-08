@@ -6,37 +6,31 @@ def generate_hitlist(filename="time_profile.txt", top_n=15):
         with open(filename, 'r') as f:
             lines = f.readlines()
 
-        print(f"\n--- Top {top_n} Manim Code Bottlenecks ---")
+        print(f"\n--- Top {top_n} Global Code Bottlenecks (Unfiltered) ---")
+        print(f"{'N-Calls':>10} {'TotTime':>8} {'PerCall':>8} {'CumTime':>8} {'PerCall':>8}  {'Source Location'}")
+        print("-" * 90)
         
-        manim_lines = []
+        printed_count = 0
         for line in lines:
-            # Look for lines that contain profiling data specifically targeting the manim directory
-            if "manim" in line and ".py:" in line:
-                parts = line.split()
-                # Ensure it's a valid cProfile data row
-                if len(parts) >= 6:
-                    ncalls, tottime, percall1, cumtime, percall2 = parts[:5]
-                    path_func = " ".join(parts[5:])
-                    
-                    # Strip the long absolute path, keeping just the filename and function
-                    file_func = path_func.split("/")[-1]
-                    
-                    # Reformat the row to be clean and readable
-                    formatted_line = f"{ncalls:>10} {tottime:>8} {percall1:>8} {cumtime:>8} {percall2:>8}  {file_func}"
-                    manim_lines.append(formatted_line)
-
-        # Print the top N bottlenecks (cProfile already sorted them by tottime)
-        for line in manim_lines[:top_n]:
-            print(line)
-            
-        # Also write the hitlist to a file so it gets saved in the experiment folder
-        with open("target_hitlist.txt", "w") as out:
-            out.write(f"--- Top {top_n} Manim Code Bottlenecks ---\n")
-            for line in manim_lines[:top_n]:
-                out.write(line + "\n")
+            parts = line.split()
+            # Ensure it's a valid cProfile data row by checking for numeric time columns
+            if len(parts) >= 6 and parts[1].replace('.', '', 1).isdigit():
+                ncalls, tottime, percall1, cumtime, percall2 = parts[:5]
+                path_func = " ".join(parts[5:])
+                
+                # Clean up the path format for crisp terminal display
+                clean_path = path_func.split("/")[-1]
+                
+                # Print directly to terminal
+                print(f"{ncalls:>10} {tottime:>8} {percall1:>8} {cumtime:>8} {percall2:>8}  {clean_path}")
+                printed_count += 1
+                
+                if printed_count >= top_n:
+                    break
 
     except FileNotFoundError:
-        print(f"Error: Could not find '{filename}'. Make sure the cProfile step finished successfully.")
+        print(f"Error: Could not find '{filename}'. Check your path specification.")
 
 if __name__ == "__main__":
-    generate_hitlist()
+    target_file = sys.argv[1] if len(sys.argv) > 1 else "time_profile.txt"
+    generate_hitlist(filename=target_file)
