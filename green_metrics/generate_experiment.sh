@@ -55,7 +55,7 @@ for ((i=1; i<=NUM_RUNS; i++)); do
     
     # The Cooldown Phase: Let the silicon rest and drop back to baseline temp, tedious but vital
     if [ $i -lt $NUM_RUNS ]; then
-        echo "💤 Cooling core for 3 seconds..."
+        echo "💤 Cooling core for 10 seconds..."
         sleep 10
     fi
 done
