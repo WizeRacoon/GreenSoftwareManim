@@ -10,6 +10,7 @@ def generate_hitlist(filename="time_profile.txt", top_n=15):
         print(f"{'N-Calls':>10} {'TotTime':>8} {'PerCall':>8} {'CumTime':>8} {'PerCall':>8}  {'Source Location'}")
         print("-" * 90)
         
+        manim_lines = []
         printed_count = 0
         for line in lines:
             parts = line.split()
@@ -17,16 +18,23 @@ def generate_hitlist(filename="time_profile.txt", top_n=15):
             if len(parts) >= 6 and parts[1].replace('.', '', 1).isdigit():
                 ncalls, tottime, percall1, cumtime, percall2 = parts[:5]
                 path_func = " ".join(parts[5:])
-                
-                # Clean up the path format for crisp terminal display
                 clean_path = path_func.split("/")[-1]
                 
-                # Print directly to terminal
-                print(f"{ncalls:>10} {tottime:>8} {percall1:>8} {cumtime:>8} {percall2:>8}  {clean_path}")
-                printed_count += 1
+                formatted_line = f"{ncalls:>10} {tottime:>8} {percall1:>8} {cumtime:>8} {percall2:>8}  {clean_path}"
+                manim_lines.append(formatted_line)
                 
-                if printed_count >= top_n:
-                    break
+                if printed_count < top_n:
+                    print(formatted_line)
+                    printed_count += 1
+
+        # RESTORED: Always save exactly to "target_hitlist.txt" in the current directory
+        # This keeps it 100% compatible with the shell script pipeline's moving mechanics
+        with open("target_hitlist.txt", "w") as out:
+            out.write(f"--- Top {top_n} Global Code Bottlenecks (Unfiltered) ---\n")
+            out.write(f"{'N-Calls':>10} {'TotTime':>8} {'PerCall':>8} {'CumTime':>8} {'PerCall':>8}  {'Source Location'}\n")
+            out.write("-" * 90 + "\n")
+            for line in manim_lines[:top_n]:
+                out.write(line + "\n")
 
     except FileNotFoundError:
         print(f"Error: Could not find '{filename}'. Check your path specification.")

@@ -53,10 +53,10 @@ for ((i=1; i<=NUM_RUNS; i++)); do
     # We pass '1' to benchmark.py so it only executes exactly one render
     taskset -c 3 python benchmark.py 1
     
-    # The Cooldown Phase: Let the silicon rest and drop back to baseline temp
+    # The Cooldown Phase: Let the silicon rest and drop back to baseline temp, tedious but vital
     if [ $i -lt $NUM_RUNS ]; then
         echo "💤 Cooling core for 3 seconds..."
-        sleep 3
+        sleep 10
     fi
 done
 
