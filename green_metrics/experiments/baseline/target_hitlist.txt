@@ -1,2 +1,0 @@
---- Top 15 Manim Code Bottlenecks ---
-         1    0.000    0.000    0.001    0.001  manim_colors.py:1(<module>)

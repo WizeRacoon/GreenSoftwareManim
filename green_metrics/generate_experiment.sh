@@ -3,21 +3,20 @@
 # Ensure the user provided an experiment name
 if [ -z "$1" ]; then
     echo "🛑 Error: No experiment name provided."
-    echo "Usage: ./generate_experiment.sh <experiment_name>"
-    echo "Example: ./generate_experiment.sh 01_baseline"
-    echo "Example: ./generate_experiment.sh 02_numpy_arrays"
+    echo "Usage: ./generate_experiment.sh <experiment_name> [num_runs]"
+    echo "Example: ./generate_experiment.sh 01_baseline 50"
     exit 1
 fi
 
 EXP_NAME=$1
+# Dynamic Argument: Grab the second parameter ($2). If empty, default to 50.
+NUM_RUNS=${2:-50}
 
-# This dynamically grabs the absolute path of the green_metrics folder
-# no matter where you execute the script from.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EXP_DIR="$SCRIPT_DIR/experiments/$EXP_NAME"
 
 echo "================================================="
-echo " 🧪 Initializing Experiment: $EXP_NAME"
+echo " 🧪 Initializing Experiment: $EXP_NAME ($NUM_RUNS runs)"
 echo "================================================="
 
 # Create the isolated experiment folder inside green_metrics/experiments/
@@ -40,16 +39,26 @@ fi
 echo "✅ Math checks passed. Proceeding to physical benchmarks."
 
 # ---------------------------------------------------------
-# STAGE 2: Energy Benchmarking
+# STAGE 2: Energy Benchmarking with Thermal Cooling
 # ---------------------------------------------------------
-echo -e "\n[2/5] ⚡ Running 30-Loop Energy Benchmarks..."
-python benchmark.py
+echo -e "\n[2/5] ⚡ Running $NUM_RUNS isolated benchmarking loops..."
 
-if [ $? -ne 0 ]; then
-    echo -e "\n❌ ABORT: Benchmark failed. (Did you forget to unlock Intel RAPL?)"
-    rm -r "$EXP_DIR"
-    exit 1
-fi
+# Clear out any stale baseline data before starting
+rm -f baseline_energy.csv
+
+for ((i=1; i<=NUM_RUNS; i++)); do
+    echo "🚀 Loop $i of $NUM_RUNS..."
+    
+    # taskset -c 3 forces it onto the hard-isolated core
+    # We pass '1' to benchmark.py so it only executes exactly one render
+    taskset -c 3 python benchmark.py 1
+    
+    # The Cooldown Phase: Let the silicon rest and drop back to baseline temp
+    if [ $i -lt $NUM_RUNS ]; then
+        echo "💤 Cooling core for 3 seconds..."
+        sleep 3
+    fi
+done
 
 # ---------------------------------------------------------
 # STAGE 3: Statistical Analysis
@@ -61,8 +70,8 @@ python analyze_energy.py
 # ---------------------------------------------------------
 # STAGE 4: CPU Profiling
 # ---------------------------------------------------------
-echo -e "\n[4/5] ⏱️  Profiling CPU Time..."
-python -m cProfile -s tottime ../manim/__main__.py -qh --disable_caching my_scenes.py HeavyScene > time_profile.txt
+echo -e "\n[4/5] ⏱️  Profiling CPU Time on Core 3..."
+taskset -c 3 python -m cProfile -s tottime ../manim/__main__.py -qh --disable_caching my_scenes.py HeavyScene > time_profile.txt
 
 # Run the parser to extract the hitlist and generate target_hitlist.txt
 python parse_hitlist.py

@@ -10,6 +10,10 @@ def plot_energy_data(csv_file):
         
         # Convert microjoules to Joules for the CPU package
         package_joules = df['package_0'] / 1_000_000
+        
+        # Drop any runs where the RAPL counter rolled over and produced negative energy
+        package_joules = package_joules[package_joules > 0]
+        
         mean_val = package_joules.mean()
         std_val = package_joules.std()
         
@@ -35,8 +39,9 @@ def plot_energy_data(csv_file):
         # Zoom the Y-axis in so variance is visible but stability is clear
         ax1.set_ylim(mean_val - (std_val * 4), mean_val + (std_val * 4))
         
+        num_actual_runs = len(package_joules)
         ax1.set_title('CPU Package Energy (Baseline Stability)', fontsize=12, fontweight='bold', pad=10)
-        ax1.set_xlabel('Benchmark Iteration (30 Runs)', fontsize=11)
+        ax1.set_xlabel(f'Benchmark Iteration ({num_actual_runs} Runs)', fontsize=11)
         ax1.set_ylabel('Energy Consumed (Joules)', fontsize=11)
         ax1.legend(loc='upper right', frameon=True)
         
