@@ -1,18 +1,18 @@
 --- Top 15 Global Code Bottlenecks (Unfiltered) ---
    N-Calls  TotTime  PerCall  CumTime  PerCall  Source Location
 ------------------------------------------------------------------------------------------
-    150500    4.114    0.000    8.851    0.000  camera.py:698(set_cairo_context_path)
-    150500    2.778    0.000    2.778    0.000  {method 'stroke_preserve' of 'cairo.Context' objects}
-       360    2.013    0.006    2.115    0.006  {av.video.frame.from_ndarray}
-   1214000    1.357    0.000    1.388    0.000  bezier.py:1032(interpolate)
-   1204000    1.296    0.000    1.645    0.000  vectorized_mobject.py:1276(consider_points_equals_2d)
-     44707    0.763    0.000    0.763    0.000  {built-in method numpy.array}
-772236/159236    0.737    0.000    1.644    0.000  mobject.py:2499(get_family)
-    773052    0.633    0.000    0.970    0.000  iterables.py:257(remove_list_redundancies)
-   1053500    0.554    0.000    1.974    0.000  vectorized_mobject.py:1381(<lambda>)
-       362    0.541    0.001    0.567    0.002  {method 'encode' of 'av.video.stream.VideoStream' objects}
-    151000    0.535    0.000    2.919    0.000  vectorized_mobject.py:1894(interpolate_color)
-    301000    0.494    0.000    0.613    0.000  camera.py:732(set_cairo_context_color)
-    151500    0.443    0.000    2.600    0.000  vectorized_mobject.py:1334(_gen_subpaths_from_points)
-       301    0.396    0.001   12.539    0.042  camera.py:660(display_multiple_non_background_colored_vmobjects)
-    191528    0.390    0.000    0.390    0.000  {method 'reduce' of 'numpy.ufunc' objects}
+       966    4.405    0.005    4.480    0.005  {method 'encode' of 'av.video.stream.VideoStream' objects}
+     71504    3.383    0.000   10.419    0.000  camera.py:698(set_cairo_context_path)
+     45539    3.084    0.000    3.084    0.000  {built-in method numpy.array}
+     71504    2.492    0.000    2.492    0.000  {method 'fill_preserve' of 'cairo.Context' objects}
+     74268    2.094    0.000    2.232    0.000  three_d_camera.py:305(project_points)
+       960    1.559    0.002    1.559    0.002  {av.video.frame.from_ndarray}
+     62327    1.215    0.000    1.215    0.000  {method 'stroke_preserve' of 'cairo.Context' objects}
+    740421    1.068    0.000    1.361    0.000  vectorized_mobject.py:1276(consider_points_equals_2d)
+    571596    0.936    0.000    0.936    0.000  bezier.py:1032(interpolate)
+     77177    0.760    0.000    0.760    0.000  {method 'close_path' of 'cairo.Context' objects}
+       847    0.695    0.001    3.490    0.004  camera.py:349(set_pixel_array)
+448472/82672    0.553    0.000    1.359    0.000  mobject.py:2499(get_family)
+    449739    0.533    0.000    0.841    0.000  iterables.py:257(remove_list_redundancies)
+    662890    0.436    0.000    1.614    0.000  vectorized_mobject.py:1381(<lambda>)
+    113313    0.385    0.000    0.385    0.000  {method 'reduce' of 'numpy.ufunc' objects}

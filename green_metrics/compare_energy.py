@@ -103,8 +103,13 @@ def compare_energy(exp1_name, exp2_name):
             
         plt.tight_layout()
         
+        # --- DYNAMIC COMPARISONS ROUTING ---
         output_name = f'{exp1_name}_vs_{exp2_name}.pdf'
-        output_path = os.path.join(script_dir, output_name)
+        comparisons_dir = os.path.join(script_dir, "experiments", "comparisons")
+        
+        # Generate comparisons subdirectory if missing
+        os.makedirs(comparisons_dir, exist_ok=True)
+        output_path = os.path.join(comparisons_dir, output_name)
         
         plt.savefig(output_path, format='pdf', bbox_inches='tight')
         print(f"\nSuccess: Generated '{output_path}'")
