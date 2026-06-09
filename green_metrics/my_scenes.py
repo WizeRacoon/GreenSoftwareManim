@@ -9,7 +9,7 @@ class HeavyScene(ThreeDScene):
         donut = Annulus(inner_radius=0.5, outer_radius=1.0, color=BLUE)
         
         # 3. Test Text Rendering & Font Paths (Hammers subpath logic)
-        text = Text("Green OS 2026", font="Sans").scale(1.5)
+        text = Text("Green Software 2026, Group 8", font="Sans").scale(0.7)
         
         # 4. Test Linear Gradients (Triggers the else branch in set_cairo_context_color)
         gradient_rect = Rectangle(width=4, height=2)
@@ -23,7 +23,7 @@ class HeavyScene(ThreeDScene):
         # 5. Massive Interpolation Morph (Stresses bezier.py and path loops simultaneously)
         target_grid = VGroup(*[Square(side_length=0.1, color=WHITE) for _ in range(100)]).arrange_in_grid(rows=10, cols=10)
         target_donut = Star(color=PURPLE).scale(0.5)
-        target_text = Text("Regression Fail", font="Sans").scale(1.5)
+        target_text = Text("Test Scene", font="Sans").scale(1.5)
         target_rect = Circle(radius=1.5).set_fill(color=[BLUE, GREEN], opacity=1.0)
         
         target_group = VGroup(target_grid, target_donut, target_text, target_rect).arrange(RIGHT, buff=1.0)
