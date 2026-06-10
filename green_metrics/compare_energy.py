@@ -23,96 +23,97 @@ def remove_outliers(data_series, threshold=3.0):
     
     return filtered_data, removed_count
 
-def compare_energy(exp1_name, exp2_name):
-    # --- ABSOLUTE PATH ROUTING ---
+def compare_energy(experiments):
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    base_path = os.path.join(script_dir, "experiments", exp1_name, "raw_energy_data.csv")
-    opt_path = os.path.join(script_dir, "experiments", exp2_name, "raw_energy_data.csv")
+    
+    # Store processed data for all experiments
+    processed_data = []
+    
+    # Color palette for up to 6 simultaneous experiments
+    colors = ['#d62728', '#2ca02c', '#1f77b4', '#9467bd', '#ff7f0e', '#8c564b']
     
     try:
-        # Load the raw data
-        raw_base = pd.read_csv(base_path, sep=';')['package_0'] / 1_000_000
-        raw_opt = pd.read_csv(opt_path, sep=';')['package_0'] / 1_000_000
-        
-        # --- THE FIX: Pass 'threshold' instead of 'z_threshold' ---
-        base_data, base_dropped = remove_outliers(raw_base, threshold=3.0)
-        opt_data, opt_dropped = remove_outliers(raw_opt, threshold=3.0)
-        
-        # Calculate clean statistics
-        base_mean, base_std = base_data.mean(), base_data.std()
-        opt_mean, opt_std = opt_data.mean(), opt_data.std()
-        
-        energy_saved = base_mean - opt_mean
-        percent_saved = (energy_saved / base_mean) * 100
-        
-        # Perform Welch's t-test on the clean data
-        t_stat, p_val = stats.ttest_ind(base_data, opt_data, equal_var=False)
-        
-        print("\n=== GREEN SOFTWARE RESULTS (MAD FILTERED) ===")
-        print(f"Comparing:      {exp1_name} vs {exp2_name}")
-        print(f"Data Cleaning:  Removed {base_dropped} outliers from {exp1_name} and {opt_dropped} from {exp2_name}.")
-        print(f"{exp1_name} Mean: {base_mean:.2f} J")
-        print(f"{exp2_name} Mean: {opt_mean:.2f} J")
-        print(f"Difference:     {energy_saved:.2f} J per run ({percent_saved:.2f}%)")
-        print(f"P-Value:        {p_val:.4e}")
-        
-        if p_val < 0.05:
-            print("Conclusion: The difference is STATISTICALLY SIGNIFICANT.")
-            significance_text = "Statistically Significant"
-        else:
-            print("Conclusion: The difference is NOT statistically significant (noise).")
-            significance_text = "Not Statistically Significant"
+        # --- 1. Load and Clean All Data ---
+        for exp_name in experiments:
+            raw_path = os.path.join(script_dir, "experiments", exp_name, "raw_energy_data.csv")
+            raw_data = pd.read_csv(raw_path, sep=';')['package_0'] / 1_000_000
             
-        # --- Plotting the Visual Proof ---
+            clean_data, dropped = remove_outliers(raw_data, threshold=3.0)
+            mean, std = clean_data.mean(), clean_data.std()
+            
+            processed_data.append({
+                'name': exp_name,
+                'data': clean_data,
+                'mean': mean,
+                'std': std,
+                'dropped': dropped
+            })
+            
+        baseline = processed_data[0]
+        
+        # --- 2. Print Statistical Comparisons ---
+        print(f"\n=== GREEN SOFTWARE RESULTS (MAD FILTERED) ===")
+        print(f"Baseline Experiment: {baseline['name']}")
+        print(f"Baseline Mean:       {baseline['mean']:.2f} J (Removed {baseline['dropped']} outliers)")
+        print("-" * 55)
+        
+        for i, exp in enumerate(processed_data[1:], start=1):
+            energy_saved = baseline['mean'] - exp['mean']
+            percent_saved = (energy_saved / baseline['mean']) * 100
+            t_stat, p_val = stats.ttest_ind(baseline['data'], exp['data'], equal_var=False)
+            
+            sig_text = "SIGNIFICANT" if p_val < 0.05 else "NOISE"
+            
+            print(f"Comparison {i}:       {exp['name']}")
+            print(f"Mean:             {exp['mean']:.2f} J (Removed {exp['dropped']} outliers)")
+            print(f"Savings:          {energy_saved:.2f} J per run ({percent_saved:.2f}%)")
+            print(f"P-Value:          {p_val:.4e} -> [{sig_text}]")
+            print("-" * 55)
+
+        # --- 3. Plotting the Visual Proof ---
         plt.style.use('seaborn-v0_8-whitegrid')
-        plt.figure(figsize=(9, 5.5))
+        # Make the chart slightly wider to accommodate a larger legend
+        plt.figure(figsize=(10, 6))
         plt.gca().set_facecolor('white')
         
-        # Plot Experiment 1 (Red)
-        plt.hist(base_data, bins=8, density=True, alpha=0.5, color='#d62728', label=f'{exp1_name} (Filtered)')
-        x_base = np.linspace(base_mean - 3*base_std, base_mean + 3*base_std, 100)
-        plt.plot(x_base, stats.norm.pdf(x_base, base_mean, base_std), color='#d62728', linewidth=2)
-        
-        # Plot Experiment 2 (Green)
-        plt.hist(opt_data, bins=8, density=True, alpha=0.5, color='#2ca02c', label=f'{exp2_name} (Filtered)')
-        x_opt = np.linspace(opt_mean - 3*opt_std, opt_mean + 3*opt_std, 100)
-        plt.plot(x_opt, stats.norm.pdf(x_opt, opt_mean, opt_std), color='#2ca02c', linewidth=2)
-        
-        # Add Mean Lines
-        plt.axvline(base_mean, color='#d62728', linestyle='dashed', linewidth=2, 
-                    label=f'{exp1_name} Mean: {base_mean:.1f} J')
-        plt.axvline(opt_mean, color='#2ca02c', linestyle='dashed', linewidth=2, 
-                    label=f'{exp2_name} Mean: {opt_mean:.1f} J')
-        
-        # Dynamic P-Value formatting
-        if p_val < 0.001:
-            p_string = f"p = {p_val:.3e}"
-        else:
-            p_string = f"p = {p_val:.3f}"
+        # Plot each experiment dynamically
+        for idx, exp in enumerate(processed_data):
+            color = colors[idx % len(colors)]
             
-        plt.title(f'Energy Comparison: {exp1_name} vs {exp2_name}', fontsize=14, fontweight='bold', pad=20)
-        plt.figtext(0.5, 0.90, f'Welch\'s t-test: {p_string} ({significance_text})', 
-                    fontsize=11, fontstyle='italic', ha='center', color='#444444')
+            # Plot Histogram
+            plt.hist(exp['data'], bins=8, density=True, alpha=0.35, color=color)
+            
+            # Plot Normal Distribution Curve
+            x_range = np.linspace(exp['mean'] - 3*exp['std'], exp['mean'] + 3*exp['std'], 100)
+            plt.plot(x_range, stats.norm.pdf(x_range, exp['mean'], exp['std']), color=color, linewidth=2)
+            
+            # Add Vertical Mean Line & Legend Label
+            plt.axvline(exp['mean'], color=color, linestyle='dashed', linewidth=2, 
+                        label=f"{exp['name']} ({exp['mean']:.2f} J)")
+
+        plt.title(f'Energy Comparison: Ablation Study', fontsize=14, fontweight='bold', pad=15)
         
         plt.xlabel('CPU Package Energy Consumed (Joules)', fontsize=12)
         plt.yticks([]) 
-        plt.legend(loc='upper right', frameon=True, fontsize=11)
+        
+        # Move legend outside the plot area if there are many experiments
+        plt.legend(loc='upper right', frameon=True, fontsize=10)
         
         for spine in ['top', 'right', 'left']:
             plt.gca().spines[spine].set_visible(False)
             
         plt.tight_layout()
         
-        # --- DYNAMIC COMPARISONS ROUTING ---
-        output_name = f'{exp1_name}_vs_{exp2_name}.pdf'
+        # --- 4. Export the Output ---
+        # Name the file based on the baseline and the number of comparisons
+        output_name = f"{baseline['name']}_vs_{len(experiments)-1}_others.pdf"
         comparisons_dir = os.path.join(script_dir, "experiments", "comparisons")
         
-        # Generate comparisons subdirectory if missing
         os.makedirs(comparisons_dir, exist_ok=True)
         output_path = os.path.join(comparisons_dir, output_name)
         
         plt.savefig(output_path, format='pdf', bbox_inches='tight')
-        print(f"\nSuccess: Generated '{output_path}'")
+        print(f"\nSuccess: Generated plot at '{output_path}'")
 
     except FileNotFoundError as e:
         print(f"\nError: Could not find one of the CSV files.")
@@ -121,11 +122,10 @@ def compare_energy(exp1_name, exp2_name):
         print(f"\nAn error occurred: {e}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python3 compare_energy.py [experiment_1] [experiment_2]")
+    # Ensure at least two experiments are provided
+    if len(sys.argv) < 3:
+        print("Usage: python3 compare_energy.py [baseline_experiment] [exp_2] [exp_3] ...")
         sys.exit(1)
         
-    exp_1 = sys.argv[1]
-    exp_2 = sys.argv[2]
-    
-    compare_energy(exp_1, exp_2)
+    experiment_list = sys.argv[1:]
+    compare_energy(experiment_list)
