@@ -1,0 +1,18 @@
+--- Top 15 Global Code Bottlenecks (Unfiltered) ---
+   N-Calls  TotTime  PerCall  CumTime  PerCall  Source Location
+------------------------------------------------------------------------------------------
+     76683    3.664    0.000   10.634    0.000  camera.py:698(set_cairo_context_path)
+     41055    3.242    0.000    3.242    0.000  {built-in method numpy.array}
+       845    3.217    0.004    3.369    0.004  {method 'encode' of 'av.video.stream.VideoStream' objects}
+     78726    2.283    0.000    2.456    0.000  three_d_camera.py:305(project_points)
+       840    1.594    0.002    1.594    0.002  {av.video.frame.from_ndarray}
+     76683    1.489    0.000    1.489    0.000  {method 'fill_preserve' of 'cairo.Context' objects}
+     62225    1.458    0.000    1.458    0.000  {method 'stroke_preserve' of 'cairo.Context' objects}
+    878608    1.175    0.000    1.496    0.000  vectorized_mobject.py:1276(consider_points_equals_2d)
+       726    0.897    0.001    4.315    0.006  camera.py:349(set_pixel_array)
+    614060    0.886    0.000    0.886    0.000  bezier.py:1032(interpolate)
+    481118    0.625    0.000    0.962    0.000  iterables.py:257(remove_list_redundancies)
+479622/86635    0.581    0.000    1.500    0.000  mobject.py:2499(get_family)
+    794710    0.485    0.000    1.839    0.000  vectorized_mobject.py:1381(<lambda>)
+    138908    0.434    0.000    0.795    0.000  camera.py:732(set_cairo_context_color)
+      1228    0.399    0.000    0.399    0.000  {method 'write' of '_io.TextIOWrapper' objects}

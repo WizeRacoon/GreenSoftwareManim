@@ -499,14 +499,13 @@ class Camera:
         fc = self.frame_center
         fh = self.frame_height
         fw = self.frame_width
-        return not reduce(
-            op.or_,
-            [
-                mobject.get_right()[0] < fc[0] - fw / 2,
-                mobject.get_bottom()[1] > fc[1] + fh / 2,
-                mobject.get_left()[0] > fc[0] + fw / 2,
-                mobject.get_top()[1] < fc[1] - fh / 2,
-            ],
+        
+        # OPTIMIZED: Short-circuit evaluation saves memory and function calls
+        return not (
+            mobject.get_right()[0] < fc[0] - fw / 2 or
+            mobject.get_bottom()[1] > fc[1] + fh / 2 or
+            mobject.get_left()[0] > fc[0] + fw / 2 or
+            mobject.get_top()[1] < fc[1] - fh / 2
         )
 
     def capture_mobject(self, mobject: Mobject, **kwargs: Any) -> None:
@@ -711,8 +710,6 @@ class Camera:
             Camera object after setting cairo_context_path
         """
         points = self.transform_points_pre_display(vmobject, vmobject.points)
-        # TODO, shouldn't this be handled in transform_points_pre_display?
-        # points = points - self.get_frame_center()
         if len(points) == 0:
             return self
 
@@ -749,8 +746,6 @@ class Camera:
             The camera object
         """
         if len(rgbas) == 1:
-            # Use reversed rgb because cairo surface is
-            # encodes it in reverse order
             ctx.set_source_rgba(*rgbas[0][2::-1], rgbas[0][3])
         else:
             points = vmobject.get_gradient_start_and_end_points()
@@ -809,12 +804,9 @@ class Camera:
             self.get_stroke_rgbas(vmobject, background=background),
             vmobject,
         )
-        ctx.set_line_width(
-            width
-            * self.cairo_line_width_multiple
-            * (self.frame_width / self.frame_width),
-            # This ensures lines have constant width as you zoom in on them.
-        )
+        # BEFORE: width * self.cairo_line_width_multiple * (self.frame_width / self.frame_width)
+        # OPTIMIZATION: Remove redundant calculation (x / x evaluates to 1.0)
+        ctx.set_line_width(width * self.cairo_line_width_multiple)
         if vmobject.joint_type != LineJointType.AUTO:
             ctx.set_line_join(LINE_JOIN_MAP[vmobject.joint_type])
         if vmobject.cap_style != CapStyleType.AUTO:
@@ -1226,15 +1218,12 @@ class Camera:
         np.array
             The pixel coords on screen.
         """
-        return reduce(
-            op.and_,
-            [
-                pixel_coords[:, 0] >= 0,
-                pixel_coords[:, 0] < self.pixel_width,
-                pixel_coords[:, 1] >= 0,
-                pixel_coords[:, 1] < self.pixel_height,
-            ],
-        )
+        # OPTIMIZED: In-place sequential masking avoids allocating 4 massive arrays at once
+        mask = pixel_coords[:, 0] >= 0
+        mask &= pixel_coords[:, 0] < self.pixel_width
+        mask &= pixel_coords[:, 1] >= 0
+        mask &= pixel_coords[:, 1] < self.pixel_height
+        return mask
 
     def adjusted_thickness(self, thickness: float) -> float:
         """Computes the adjusted stroke width for a zoomed camera.

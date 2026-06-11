@@ -25,11 +25,7 @@ def remove_outliers(data_series, threshold=3.0):
 
 def compare_energy(experiments):
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Store processed data for all experiments
     processed_data = []
-    
-    # Color palette for up to 6 simultaneous experiments
     colors = ['#d62728', '#2ca02c', '#1f77b4', '#9467bd', '#ff7f0e', '#8c564b']
     
     try:
@@ -46,34 +42,38 @@ def compare_energy(experiments):
                 'data': clean_data,
                 'mean': mean,
                 'std': std,
-                'dropped': dropped
+                'dropped': dropped,
+                'p_val': None,       # Set dynamically during stats loop
+                'significant': None   # Set dynamically during stats loop
             })
             
         baseline = processed_data[0]
         
-        # --- 2. Print Statistical Comparisons ---
+        # --- 2. Print Statistical Comparisons & Store Significance ---
         print(f"\n=== GREEN SOFTWARE RESULTS (MAD FILTERED) ===")
         print(f"Baseline Experiment: {baseline['name']}")
         print(f"Baseline Mean:       {baseline['mean']:.2f} J (Removed {baseline['dropped']} outliers)")
-        print("-" * 55)
+        print("-" * 65)
         
         for i, exp in enumerate(processed_data[1:], start=1):
+            # Compute Welch's t-test
+            t_stat, p_val = stats.ttest_ind(baseline['data'], exp['data'], equal_var=False)
+            exp['p_val'] = p_val
+            exp['significant'] = p_val < 0.05
+            
             energy_saved = baseline['mean'] - exp['mean']
             percent_saved = (energy_saved / baseline['mean']) * 100
-            t_stat, p_val = stats.ttest_ind(baseline['data'], exp['data'], equal_var=False)
-            
-            sig_text = "SIGNIFICANT" if p_val < 0.05 else "NOISE"
+            sig_text = "SIGNIFICANT" if exp['significant'] else "NOISE"
             
             print(f"Comparison {i}:       {exp['name']}")
             print(f"Mean:             {exp['mean']:.2f} J (Removed {exp['dropped']} outliers)")
             print(f"Savings:          {energy_saved:.2f} J per run ({percent_saved:.2f}%)")
             print(f"P-Value:          {p_val:.4e} -> [{sig_text}]")
-            print("-" * 55)
+            print("-" * 65)
 
-        # --- 3. Plotting the Visual Proof ---
+        # --- 3. Plotting the Visual Proof with Significance Markers ---
         plt.style.use('seaborn-v0_8-whitegrid')
-        # Make the chart slightly wider to accommodate a larger legend
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(11, 6))  # Widened slightly to prevent legend overlapping data
         plt.gca().set_facecolor('white')
         
         # Plot each experiment dynamically
@@ -81,23 +81,32 @@ def compare_energy(experiments):
             color = colors[idx % len(colors)]
             
             # Plot Histogram
-            plt.hist(exp['data'], bins=8, density=True, alpha=0.35, color=color)
+            plt.hist(exp['data'], bins=10, density=True, alpha=0.20, color=color)
             
             # Plot Normal Distribution Curve
             x_range = np.linspace(exp['mean'] - 3*exp['std'], exp['mean'] + 3*exp['std'], 100)
             plt.plot(x_range, stats.norm.pdf(x_range, exp['mean'], exp['std']), color=color, linewidth=2)
             
-            # Add Vertical Mean Line & Legend Label
-            plt.axvline(exp['mean'], color=color, linestyle='dashed', linewidth=2, 
-                        label=f"{exp['name']} ({exp['mean']:.2f} J)")
+            # --- Dynamic Legend Label Generation ---
+            if idx == 0:
+                # Baseline identifier label
+                label_text = f"{exp['name']} ({exp['mean']:.2f} J) [Baseline]"
+            else:
+                # Append p-value and context text to optimization labels
+                p_val = exp['p_val']
+                p_string = f"p={p_val:.3e}" if p_val < 0.001 else f"p={p_val:.3f}"
+                sig_string = "Significant" if exp['significant'] else "Noise"
+                label_text = f"{exp['name']} ({exp['mean']:.2f} J) [{p_string}, {sig_string}]"
+            
+            # Add Vertical Mean Line using the compiled label text
+            plt.axvline(exp['mean'], color=color, linestyle='dashed', linewidth=2, label=label_text)
 
-        plt.title(f'Energy Comparison: Ablation Study', fontsize=14, fontweight='bold', pad=15)
-        
+        plt.title('Energy Comparison: Ablation Study', fontsize=14, fontweight='bold', pad=15)
         plt.xlabel('CPU Package Energy Consumed (Joules)', fontsize=12)
         plt.yticks([]) 
         
-        # Move legend outside the plot area if there are many experiments
-        plt.legend(loc='upper right', frameon=True, fontsize=10)
+        # Display the descriptive statistical legend box
+        plt.legend(loc='upper right', frameon=True, fontsize=9.5, facecolor='white', edgecolor='#e0e0e0')
         
         for spine in ['top', 'right', 'left']:
             plt.gca().spines[spine].set_visible(False)
@@ -105,7 +114,6 @@ def compare_energy(experiments):
         plt.tight_layout()
         
         # --- 4. Export the Output ---
-        # Name the file based on the baseline and the number of comparisons
         output_name = f"{baseline['name']}_vs_{len(experiments)-1}_others.pdf"
         comparisons_dir = os.path.join(script_dir, "experiments", "comparisons")
         
@@ -122,7 +130,6 @@ def compare_energy(experiments):
         print(f"\nAn error occurred: {e}")
 
 if __name__ == "__main__":
-    # Ensure at least two experiments are provided
     if len(sys.argv) < 3:
         print("Usage: python3 compare_energy.py [baseline_experiment] [exp_2] [exp_3] ...")
         sys.exit(1)

@@ -51,7 +51,7 @@ for ((i=1; i<=NUM_RUNS; i++)); do
     
     # taskset -c 3 forces it onto the hard-isolated core
     # We pass '1' to benchmark.py so it only executes exactly one render
-    taskset -c 3 python benchmark.py 1
+    taskset -c "2,3,4" python benchmark.py 1
     
     # The Cooldown Phase: 7s to clear that thermal chattering boundary!
     if [ $i -lt $NUM_RUNS ]; then
@@ -71,7 +71,7 @@ python analyze_energy.py
 # STAGE 4: CPU Profiling
 # ---------------------------------------------------------
 echo -e "\n[4/6] ⏱️  Profiling CPU Time on Core 3..."
-taskset -c 3 python -m cProfile -s tottime ../manim/__main__.py -qh --disable_caching my_scenes.py HeavyScene > time_profile.txt
+taskset -c "2,3,4" python -m cProfile -s tottime ../manim/__main__.py -qh --disable_caching my_scenes.py HeavyScene > time_profile.txt
 
 # Run the parser to extract the hitlist and generate target_hitlist.txt
 python parse_hitlist.py
