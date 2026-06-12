@@ -40,7 +40,7 @@ def plot_energy_data(csv_file):
         ax1.set_ylim(mean_val - (std_val * 4), mean_val + (std_val * 4))
         
         num_actual_runs = len(package_joules)
-        ax1.set_title('CPU Package Energy (Baseline Stability)', fontsize=12, fontweight='bold', pad=10)
+        ax1.set_title('CPU Package Energy', fontsize=12, fontweight='bold', pad=10)
         ax1.set_xlabel(f'Benchmark Iteration ({num_actual_runs} Runs)', fontsize=11)
         ax1.set_ylabel('Energy Consumed (Joules)', fontsize=11)
         ax1.legend(loc='upper right', frameon=True)
@@ -67,8 +67,8 @@ def plot_energy_data(csv_file):
         
         # Save as a vector PDF for crisp LaTeX rendering
         plt.tight_layout()
-        plt.savefig('energy_baseline_plot.pdf', format='pdf', bbox_inches='tight')
-        print("Success: Generated 'energy_baseline_plot.pdf'")
+        plt.savefig('energy_plot.pdf', format='pdf', bbox_inches='tight')
+        print("Success: Generated 'energy_plot.pdf'")
         
     except FileNotFoundError:
         print(f"Error: {csv_file} not found. Run the benchmark loop first!")

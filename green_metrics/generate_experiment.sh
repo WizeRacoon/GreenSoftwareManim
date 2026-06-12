@@ -96,7 +96,7 @@ echo -e "\n🧹 Packaging experiment data..."
 
 # Move all the generated files into the isolated experiment folder
 mv baseline_energy.csv "$EXP_DIR/raw_energy_data.csv"
-mv energy_baseline_plot.pdf "$EXP_DIR/distribution_plot.pdf"
+mv energy_plot.pdf "$EXP_DIR/distribution_plot.pdf"
 mv time_profile.txt "$EXP_DIR/time_profile.txt"
 mv target_hitlist.txt "$EXP_DIR/target_hitlist.txt"
 

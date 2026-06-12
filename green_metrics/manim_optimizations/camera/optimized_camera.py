@@ -709,21 +709,48 @@ class Camera:
         Camera
             Camera object after setting cairo_context_path
         """
+        """   
+        OPTIMIZED: Batch-converts coordinates to native Python float lists to 
+        completely eliminate NumPy scalar boxing, slice allocations, and tuple 
+        unpacking churn inside high-frequency loops.
+        """
         points = self.transform_points_pre_display(vmobject, vmobject.points)
         if len(points) == 0:
             return self
 
         ctx.new_path()
         subpaths = vmobject.gen_subpaths_from_points_2d(points)
+        
+        # Pull constants into local scope for fast lookup
+        atol = vmobject.tolerance_for_point_equality
+        rtol = 1e-5
+
         for subpath in subpaths:
-            quads = vmobject.gen_cubic_bezier_tuples_from_points(subpath)
+            n_points = len(subpath)
+            if n_points < 4:
+                continue
+            
+            # Strategy C5: Batch C-level conversion to native Python floats.
+            # Bypasses NumPy overhead entirely inside the tight loop.
+            subpath_coords = subpath[:, :2].tolist()
+            
             ctx.new_sub_path()
-            start = subpath[0]
-            ctx.move_to(*start[:2])
-            for _p0, p1, p2, p3 in quads:
-                ctx.curve_to(*p1[:2], *p2[:2], *p3[:2])
-            if vmobject.consider_points_equals_2d(subpath[0], subpath[-1]):
+            ctx.move_to(subpath_coords[0][0], subpath_coords[0][1])
+            
+            # Strategy D6: Flat unrolled iteration replaces generator and slicing churn
+            for i in range(0, n_points - (n_points % 4), 4):
+                p1 = subpath_coords[i+1]
+                p2 = subpath_coords[i+2]
+                p3 = subpath_coords[i+3]
+                ctx.curve_to(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1])
+                
+            # Optimized Inline Path Closure Check (Eliminates external function calls)
+            p_start = subpath_coords[0]
+            p_end = subpath_coords[-1]
+            if (abs(p_start[0] - p_end[0]) <= atol + rtol * abs(p_end[0]) and 
+                abs(p_start[1] - p_end[1]) <= atol + rtol * abs(p_end[1])):
                 ctx.close_path()
+                
         return self
 
     def set_cairo_context_color(
