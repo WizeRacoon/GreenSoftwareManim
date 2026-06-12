@@ -499,13 +499,14 @@ class Camera:
         fc = self.frame_center
         fh = self.frame_height
         fw = self.frame_width
-        
-        # OPTIMIZED: Short-circuit evaluation saves memory and function calls
-        return not (
-            mobject.get_right()[0] < fc[0] - fw / 2 or
-            mobject.get_bottom()[1] > fc[1] + fh / 2 or
-            mobject.get_left()[0] > fc[0] + fw / 2 or
-            mobject.get_top()[1] < fc[1] - fh / 2
+        return not reduce(
+            op.or_,
+            [
+                mobject.get_right()[0] < fc[0] - fw / 2,
+                mobject.get_bottom()[1] > fc[1] + fh / 2,
+                mobject.get_left()[0] > fc[0] + fw / 2,
+                mobject.get_top()[1] < fc[1] - fh / 2,
+            ],
         )
 
     def capture_mobject(self, mobject: Mobject, **kwargs: Any) -> None:
@@ -709,48 +710,23 @@ class Camera:
         Camera
             Camera object after setting cairo_context_path
         """
-        """   
-        OPTIMIZED: Batch-converts coordinates to native Python float lists to 
-        completely eliminate NumPy scalar boxing, slice allocations, and tuple 
-        unpacking churn inside high-frequency loops.
-        """
         points = self.transform_points_pre_display(vmobject, vmobject.points)
+        # TODO, shouldn't this be handled in transform_points_pre_display?
+        # points = points - self.get_frame_center()
         if len(points) == 0:
             return self
 
         ctx.new_path()
         subpaths = vmobject.gen_subpaths_from_points_2d(points)
-        
-        # Pull constants into local scope for fast lookup
-        atol = vmobject.tolerance_for_point_equality
-        rtol = 1e-5
-
         for subpath in subpaths:
-            n_points = len(subpath)
-            if n_points < 4:
-                continue
-            
-            # Strategy C5: Batch C-level conversion to native Python floats.
-            # Bypasses NumPy overhead entirely inside the tight loop.
-            subpath_coords = subpath[:, :2].tolist()
-            
+            quads = vmobject.gen_cubic_bezier_tuples_from_points(subpath)
             ctx.new_sub_path()
-            ctx.move_to(subpath_coords[0][0], subpath_coords[0][1])
-            
-            # Strategy D6: Flat unrolled iteration replaces generator and slicing churn
-            for i in range(0, n_points - (n_points % 4), 4):
-                p1 = subpath_coords[i+1]
-                p2 = subpath_coords[i+2]
-                p3 = subpath_coords[i+3]
-                ctx.curve_to(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1])
-                
-            # Optimized Inline Path Closure Check (Eliminates external function calls)
-            p_start = subpath_coords[0]
-            p_end = subpath_coords[-1]
-            if (abs(p_start[0] - p_end[0]) <= atol + rtol * abs(p_end[0]) and 
-                abs(p_start[1] - p_end[1]) <= atol + rtol * abs(p_end[1])):
+            start = subpath[0]
+            ctx.move_to(*start[:2])
+            for _p0, p1, p2, p3 in quads:
+                ctx.curve_to(*p1[:2], *p2[:2], *p3[:2])
+            if vmobject.consider_points_equals_2d(subpath[0], subpath[-1]):
                 ctx.close_path()
-                
         return self
 
     def set_cairo_context_color(
@@ -773,6 +749,8 @@ class Camera:
             The camera object
         """
         if len(rgbas) == 1:
+            # Use reversed rgb because cairo surface is
+            # encodes it in reverse order
             ctx.set_source_rgba(*rgbas[0][2::-1], rgbas[0][3])
         else:
             points = vmobject.get_gradient_start_and_end_points()
@@ -831,9 +809,12 @@ class Camera:
             self.get_stroke_rgbas(vmobject, background=background),
             vmobject,
         )
-        # BEFORE: width * self.cairo_line_width_multiple * (self.frame_width / self.frame_width)
-        # OPTIMIZATION: Remove redundant calculation (x / x evaluates to 1.0)
-        ctx.set_line_width(width * self.cairo_line_width_multiple)
+        ctx.set_line_width(
+            width
+            * self.cairo_line_width_multiple
+            * (self.frame_width / self.frame_width),
+            # This ensures lines have constant width as you zoom in on them.
+        )
         if vmobject.joint_type != LineJointType.AUTO:
             ctx.set_line_join(LINE_JOIN_MAP[vmobject.joint_type])
         if vmobject.cap_style != CapStyleType.AUTO:
@@ -978,7 +959,7 @@ class Camera:
         rgbas = (self.rgb_max_val * rgbas).astype(self.pixel_array_dtype)
         target_len = len(pixel_coords)
         factor = target_len // len(rgbas)
-        rgbas = np.array([rgbas] * factor).reshape((target_len, rgba_len))
+        rgbas = np.tile(rgbas, (factor, 1))
 
         on_screen_indices = self.on_screen_pixels(pixel_coords)
         pixel_coords = pixel_coords[on_screen_indices]
@@ -1245,12 +1226,15 @@ class Camera:
         np.array
             The pixel coords on screen.
         """
-        # OPTIMIZED: In-place sequential masking avoids allocating 4 massive arrays at once
-        mask = pixel_coords[:, 0] >= 0
-        mask &= pixel_coords[:, 0] < self.pixel_width
-        mask &= pixel_coords[:, 1] >= 0
-        mask &= pixel_coords[:, 1] < self.pixel_height
-        return mask
+        return reduce(
+            op.and_,
+            [
+                pixel_coords[:, 0] >= 0,
+                pixel_coords[:, 0] < self.pixel_width,
+                pixel_coords[:, 1] >= 0,
+                pixel_coords[:, 1] < self.pixel_height,
+            ],
+        )
 
     def adjusted_thickness(self, thickness: float) -> float:
         """Computes the adjusted stroke width for a zoomed camera.
@@ -1308,7 +1292,7 @@ class Camera:
             Array of thickened pixel coords.
         """
         nudges = self.get_thickening_nudges(thickness)
-        pixel_coords = np.array([pixel_coords + nudge for nudge in nudges])
+        pixel_coords = pixel_coords[None] + nudges[:, None]
         size = pixel_coords.size
         return pixel_coords.reshape((size // 2, 2))
 

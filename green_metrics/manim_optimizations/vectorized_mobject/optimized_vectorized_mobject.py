@@ -247,10 +247,11 @@ class VMobject(Mobject):
 
         sheen_factor = self.get_sheen_factor()
         if sheen_factor != 0 and len(rgbas) == 1:
-            light_rgbas = np.array(rgbas)
-            light_rgbas[:, :3] += sheen_factor
-            np.clip(light_rgbas, 0, 1, out=light_rgbas)
-            rgbas = np.append(rgbas, light_rgbas, axis=0)
+            rgbas = np.tile(rgbas, (2, 1))
+
+            # Apply the sheen to only the bottom half of the array block
+            half_idx = len(rgbas) // 2
+            rgbas[half_idx:, :3] = np.clip(rgbas[half_idx:, :3] + sheen_factor, 0.0, 1.0)
         return rgbas
 
     def update_rgbas_array(
@@ -794,7 +795,7 @@ class VMobject(Mobject):
         return self
 
     def set_points(self, points: Point3DLike_Array) -> Self:
-        self.points: Point3D_Array = np.array(points)
+        self.points: Point3D_Array = np.asarray(points)
         return self
 
     def resize_points(

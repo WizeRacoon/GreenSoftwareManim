@@ -996,8 +996,7 @@ def bezier_remap(
     # We have two 0s, one 1, two 2s and so on.
     # The split factors array would hence be:
     # [2, 1, 2, 1, 2, 1, 2, 1, 2, 1]
-    split_factors = np.zeros(current_number_of_curves, dtype="i")
-    np.add.at(split_factors, repeat_indices, 1)
+    split_factors = np.bincount(repeat_indices, minlength=current_number_of_curves).astype("i")
 
     new_tuples = np.empty((new_number_of_curves, nppc, dim))
     index = 0
