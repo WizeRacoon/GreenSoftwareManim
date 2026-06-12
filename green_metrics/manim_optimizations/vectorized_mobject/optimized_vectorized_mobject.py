@@ -1,4 +1,4 @@
-"""Mobjects that use vector graphics."""
+"""OPTIMIZED | Mobjects that use vector graphics."""
 
 from __future__ import annotations
 

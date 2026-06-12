@@ -30,11 +30,24 @@ def compare_energy(experiments):
     
     try:
         # --- 1. Load and Clean All Data ---
+        # Your measured baseline idle power (Watts)
+        IDLE_POWER_WATTS = 20.6581 
+        
         for exp_name in experiments:
             raw_path = os.path.join(script_dir, "experiments", exp_name, "raw_energy_data.csv")
-            raw_data = pd.read_csv(raw_path, sep=';')['package_0'] / 1_000_000
             
-            clean_data, dropped = remove_outliers(raw_data, threshold=3.0)
+            # Load the complete dataframe to cross-reference energy against time
+            raw_df = pd.read_csv(raw_path, sep=';')
+            
+            # 1. Convert raw micro-joules to standard Joules
+            measured_energy = raw_df['package_0'] / 1_000_000
+            duration_seconds = raw_df['duration']
+            
+            # 2. Consequential Isolation: Subtract baseline background leakage
+            isolated_energy = measured_energy - (IDLE_POWER_WATTS * duration_seconds)
+            
+            # Run your MAD outlier cleanup on the cleanly isolated data plane
+            clean_data, dropped = remove_outliers(isolated_energy, threshold=3.0)
             mean, std = clean_data.mean(), clean_data.std()
             
             processed_data.append({
@@ -43,10 +56,11 @@ def compare_energy(experiments):
                 'mean': mean,
                 'std': std,
                 'dropped': dropped,
-                'p_val': None,       # Set dynamically during stats loop
-                'significant': None   # Set dynamically during stats loop
+                'p_val': None,
+                'significant': None
             })
-            
+        
+        # --- RESTORED LINE: Define the baseline reference variable ---
         baseline = processed_data[0]
         
         # --- 2. Print Statistical Comparisons & Store Significance ---
