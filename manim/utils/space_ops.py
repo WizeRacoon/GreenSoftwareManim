@@ -247,7 +247,7 @@ def rotation_matrix_from_quaternion(quat: np.ndarray) -> np.ndarray:
 
 
 def rotation_matrix_transpose(angle: float, axis: Vector3DLike) -> np.ndarray:
-    if all(np.array(axis)[:2] == np.zeros(2)):
+    if all(axis[0] == 0 and axis[1] == 0):
         return rotation_about_z(angle * np.sign(axis[2])).T
     return rotation_matrix(angle, axis).T
 
@@ -349,9 +349,12 @@ def angle_between_vectors(v1: np.ndarray, v2: np.ndarray) -> float:
     float
         The angle between the vectors.
     """
+
+    n1, n2 = normalize(v1), normalize(v2)
+
     val: float = 2 * np.arctan2(
-        np.linalg.norm(normalize(v1) - normalize(v2)),
-        np.linalg.norm(normalize(v1) + normalize(v2)),
+        np.linalg.norm(n1 - n2),
+        np.linalg.norm(n1 + n2),
     )
 
     return val
@@ -362,7 +365,7 @@ def normalize(
 ) -> np.ndarray:
     norm = np.linalg.norm(vect)
     if norm > 0:
-        return np.array(vect) / norm
+        return np.asarray(vect) / norm
     else:
         return fall_back or np.zeros(len(vect))
 
@@ -382,10 +385,9 @@ def normalize_along_axis(array: np.ndarray, axis: np.ndarray) -> np.ndarray:
     np.ndarray
         Array which has been normalized according to the axis.
     """
-    norms = np.sqrt((array * array).sum(axis))
-    norms[norms == 0] = 1
-    buffed_norms = np.repeat(norms, array.shape[axis]).reshape(array.shape)
-    array /= buffed_norms
+    norms = np.linalg.norm(array, axis=axis, keepdims=True)
+    norms[norms == 0] = 1.0
+    array /= norms
     return array
 
 
@@ -524,7 +526,7 @@ def center_of_mass(points: PointNDLike_Array) -> PointND:
     np.ndarray
         The center of mass of the points.
     """
-    return np.average(points, 0, np.ones(len(points)))
+    return np.mean(points, 0)
 
 
 def midpoint(
@@ -612,7 +614,7 @@ def find_intersection(
     for p0, v0, p1, v1 in zip(p0s, v0s, p1s, v1s, strict=True):
         normal = cross(v1, cross(v0, v1))
         denom = max(np.dot(v0, normal), threshold)
-        result += [p0 + np.dot(p1 - p0, normal) / denom * v0]
+        result.append(p0 + np.dot(p1 - p0, normal) / denom * v0)
     return result
 
 

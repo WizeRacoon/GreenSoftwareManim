@@ -54,7 +54,7 @@ def binary_search(
     """
     lh = lower_bound
     rh = upper_bound
-    mh: float = np.mean(np.array([lh, rh]))
+    mh: float = np.mean([lh, rh])
     while abs(rh - lh) > tolerance:
         mh = np.mean(np.array([lh, rh]))
         lx, mx, rx = (function(h) for h in (lh, mh, rh))

@@ -675,7 +675,7 @@ class ApplyMatrix(ApplyPointwiseFunction):
         super().__init__(func, mobject, **kwargs)
 
     def initialize_matrix(self, matrix: np.ndarray) -> np.ndarray:
-        matrix = np.array(matrix)
+        matrix = np.asarray(matrix)
         if matrix.shape == (2, 2):
             new_matrix = np.identity(3)
             new_matrix[:2, :2] = matrix

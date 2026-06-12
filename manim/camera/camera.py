@@ -959,7 +959,7 @@ class Camera:
         rgbas = (self.rgb_max_val * rgbas).astype(self.pixel_array_dtype)
         target_len = len(pixel_coords)
         factor = target_len // len(rgbas)
-        rgbas = np.array([rgbas] * factor).reshape((target_len, rgba_len))
+        rgbas = np.tile(rgbas, (factor, 1))
 
         on_screen_indices = self.on_screen_pixels(pixel_coords)
         pixel_coords = pixel_coords[on_screen_indices]
@@ -1292,7 +1292,7 @@ class Camera:
             Array of thickened pixel coords.
         """
         nudges = self.get_thickening_nudges(thickness)
-        pixel_coords = np.array([pixel_coords + nudge for nudge in nudges])
+        pixel_coords = pixel_coords[None] + nudges[:, None]
         size = pixel_coords.size
         return pixel_coords.reshape((size // 2, 2))
 
