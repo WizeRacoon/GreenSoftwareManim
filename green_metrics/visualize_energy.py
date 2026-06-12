@@ -59,13 +59,13 @@ def plot_energy_data(csv_file):
         
         ax2.set_title('Statistical Distribution', fontsize=12, fontweight='bold', pad=10)
         ax2.set_xlabel('Joules', fontsize=11)
-        ax2.set_yticks([]) # Hide Y ticks as density numbers aren't needed for the story
+        ax2.set_yticks([])
         
         # Clean up borders
         for spine in ['top', 'right', 'left']:
             ax2.spines[spine].set_visible(False)
         
-        # Save as a vector PDF for crisp LaTeX rendering
+        # Save as a vector PDF
         plt.tight_layout()
         plt.savefig('energy_plot.pdf', format='pdf', bbox_inches='tight')
         print("Success: Generated 'energy_plot.pdf'")

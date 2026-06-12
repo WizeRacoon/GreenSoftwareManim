@@ -27,8 +27,6 @@ def generate_hitlist(filename="time_profile.txt", top_n=15):
                     print(formatted_line)
                     printed_count += 1
 
-        # RESTORED: Always save exactly to "target_hitlist.txt" in the current directory
-        # This keeps it 100% compatible with the shell script pipeline's moving mechanics
         with open("target_hitlist.txt", "w") as out:
             out.write(f"--- Top {top_n} Global Code Bottlenecks (Unfiltered) ---\n")
             out.write(f"{'N-Calls':>10} {'TotTime':>8} {'PerCall':>8} {'CumTime':>8} {'PerCall':>8}  {'Source Location'}\n")

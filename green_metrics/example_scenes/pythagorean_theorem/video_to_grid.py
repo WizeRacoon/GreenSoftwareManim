@@ -46,8 +46,8 @@ def create_video_transformation_grid(video_path, output_path, timesteps):
         if success:
             # 10% Side Margin Eradication & Center Crop
             h, w, _ = frame.shape
-            crop_start = int(w * 0.10)  # Drop first 10% from the left
-            crop_end = int(w * 0.90)    # Drop last 10% from the right
+            crop_start = int(w * 0.10)
+            crop_end = int(w * 0.90)
             cropped_frame = frame[:, crop_start:crop_end]
             
             # Convert BGR to RGB for accurate report visualization
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     VIDEO_INPUT = "PythagoreanProof.mp4"
     IMAGE_OUTPUT = "pythagorean_transformation_grid.png"
 
-    # Exactly 8 timesteps optimized for a 4x2 portrait sequence layout
+    # 8 timesteps optimized for a 4x2 portrait sequence layout
     TARGET_TIMESTEPS = [
         0.5, 
         4.0, 4.4, 

@@ -1,5 +1,5 @@
 import numpy as np
-import sys  # Added for sys.exit()
+import sys
 from manim.utils.bezier import interpolate as optimized_interpolate
 
 def original_interpolate(start, end, alpha):
@@ -21,7 +21,7 @@ def test_interpolate_accuracy():
     except AssertionError as e:
         print("❌ FAILURE: The optimized function altered the mathematical output!")
         print(e)
-        sys.exit(1) # <--- CRITICAL: Tells the bash pipeline to abort immediately!
+        sys.exit(1)
 
 def test_camera_smoke_render():
     print("\n🎥 Running camera smoke test (Functional Verification)...")

@@ -8,7 +8,7 @@ csv_handler = CSVHandler('idle_baseline.csv')
 
 @measure_energy(handler=csv_handler)
 def sample_idle():
-    # Sit completely idle for 30 seconds to capture pure background leakage
+    # Sit completely idle for 30 seconds to capture  background leakage
     time.sleep(30)
 
 if __name__ == "__main__":

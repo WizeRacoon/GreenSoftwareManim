@@ -41,7 +41,6 @@ class HeavyScene(ThreeDScene):
         self.next_section()
         cube = Cube(color=GOLD).scale(1.5)
 
-        # FIXED: Changes the perspective instantly without an animation runtime conflict
         self.set_camera_orientation(phi=60 * DEGREES, theta=45 * DEGREES) 
 
         self.play(DrawBorderThenFill(cube))

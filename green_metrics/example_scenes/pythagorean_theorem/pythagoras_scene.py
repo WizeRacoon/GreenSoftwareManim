@@ -5,7 +5,7 @@ class PythagoreanProof(Scene):
     def construct(self):
         a = 3.0
         b = 4.0
-        scale = 0.75  # Kept large since we are using a single centered box
+        scale = 0.75
         sa = a * scale
         sb = b * scale
         side_length = (a + b) * scale
@@ -44,20 +44,14 @@ class PythagoreanProof(Scene):
         t3 = Polygon(c_ur, c_ur + LEFT*sa, c_ur + LEFT*sa + DOWN*sb, fill_color=color_tri, fill_opacity=0.75, stroke_color=WHITE)
         t4 = Polygon(c_ur, c_ur + DOWN*sb, c_ur + LEFT*sa + DOWN*sb, fill_color=color_tri, fill_opacity=0.75, stroke_color=WHITE)
         
-        # FIX ISSUE 1: SWAP POSITIONS FOR a2 and b2 LABELS
-        # Empty Area 1 (UL) has side length 'b', its area is b^2.
-        # Empty Area 2 (DR) has side length 'a', its area is a^2.
         label_a2 = MathTex("a^2", color=color_a).scale(1.2).move_to(c_dr + UP*(sb/2.5) + LEFT*(sb/2.5))
         label_b2 = MathTex("b^2", color=color_b).scale(1.2).move_to(c_ul + DOWN*(sa/1.5) + RIGHT*(sa/1.5))
         
-        # Explicit rectangle side length markings
-        # FIX ISSUE 2: COLOR SIDE MARKINGS TO MATCH LABELS
         dim_rect1_b = MathTex("b", color=color_b).scale(0.5).next_to(c_dl + RIGHT*(sb/2), DOWN, buff=0.1)
         dim_rect1_a = MathTex("a", color=color_a).scale(0.5).next_to(c_dl + UP*(sa/2), LEFT, buff=0.1)
         dim_rect2_a = MathTex("a", color=color_a).scale(0.5).next_to(c_ur + LEFT*(sa/2), UP, buff=0.1)
         dim_rect2_b = MathTex("b", color=color_b).scale(0.5).next_to(c_ur + DOWN*(sb/2), RIGHT, buff=0.1)
         
-        # UPDATE EQUATION text and color to reflect swapped labels
         equation = MathTex("\\text{Empty Area} = ", "a^2", "+", "b^2").scale(0.9)
         equation[1].set_color(color_a)
         equation[3].set_color(color_b)
@@ -69,12 +63,8 @@ class PythagoreanProof(Scene):
             Write(dim_rect1_b), Write(dim_rect1_a), Write(dim_rect2_a), Write(dim_rect2_b),
             Write(equation)
         )
-        self.wait(2.5)  # <-- SCREENSHOT 1: Layout 2 Context
+        self.wait(2.5)
         
-        # ---------------------------------------------------------
-        # MORPH TRANSFORMATION: Layout 2 ---> Layout 1
-        # ---------------------------------------------------------
-        # Clean up old labels before shifting geometry
         self.play(
             FadeOut(label_a2), FadeOut(label_b2),
             FadeOut(dim_rect1_b), FadeOut(dim_rect1_a), FadeOut(dim_rect2_a), FadeOut(dim_rect2_b),
@@ -82,8 +72,6 @@ class PythagoreanProof(Scene):
             run_time=0.5
         )
         
-        # Target layout positions where right angles sit perfectly in the box corners
-        # t1 stays at DL corner, but changes orientation to wrap the edge
         t1_target = Polygon(c_dl, c_dl + RIGHT*sb, c_dl + UP*sa, fill_color=color_tri, fill_opacity=0.75, stroke_color=WHITE)
         t2_target = Polygon(c_dr, c_dr + UP*sb, c_dr + LEFT*sa, fill_color=color_tri, fill_opacity=0.75, stroke_color=WHITE)
         t3_target = Polygon(c_ur, c_ur + LEFT*sb, c_ur + DOWN*sa, fill_color=color_tri, fill_opacity=0.75, stroke_color=WHITE)
@@ -103,13 +91,10 @@ class PythagoreanProof(Scene):
         label_c2 = MathTex("c^2", color=color_c).scale(1.2).move_to(box.get_center())
         
         # Add side definitions for individual triangles to denote clarity
-        # FIX ISSUE 2: COLOR SIDE MARKINGS TO MATCH LABELS
         lbl_tri_a = MathTex("a", color=color_a).scale(0.7).move_to(c_dl + UP*(sa/2) + RIGHT*0.15)
         lbl_tri_b = MathTex("b", color=color_b).scale(0.7).move_to(c_dl + RIGHT*(sb/2) + UP*0.15)
         lbl_tri_c = MathTex("c", color=color_c).scale(0.7).move_to(c_dl + RIGHT*(sb/2) + UP*(sa/2) + UR*0.15)
         
-        # The standard proof morphs from b^2+a^2 = total Area - 4Tri to total Area - 4Tri = c^2, so b^2+a^2=c^2 is shown.
-        # The user wants to fix reversed labels in Initial state. Morphed state shows standard c^2 area, I will keep standard colors here.
         final_theorem = MathTex("a^2", "+", "b^2", "=", "c^2").scale(1.2)
         final_theorem[0].set_color(color_a)
         final_theorem[2].set_color(color_b)
@@ -121,4 +106,4 @@ class PythagoreanProof(Scene):
             Write(lbl_tri_a), Write(lbl_tri_b), Write(lbl_tri_c),
             Write(final_theorem)
         )
-        self.wait(3.5)  # <-- SCREENSHOT 2: Morph Completion context
+        self.wait(3.5) 

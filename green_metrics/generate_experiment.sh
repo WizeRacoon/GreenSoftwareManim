@@ -53,10 +53,10 @@ for ((i=1; i<=NUM_RUNS; i++)); do
     # We pass '1' to benchmark.py so it only executes exactly one render
     taskset -c "2,3,4" python benchmark.py 1
     
-    # The Cooldown Phase: 7s to clear that thermal chattering boundary!
+    # The Cooldown Phase: 5s to clear that thermal chattering boundary!
     if [ $i -lt $NUM_RUNS ]; then
-        echo "💤 Cooling core for 7 seconds..."
-        sleep 7
+        echo "💤 Cooling core for 5 seconds..."
+        sleep 5
     fi
 done
 
@@ -109,7 +109,7 @@ else
     echo "⚠️ Warning: Could not locate verification video at $LOCAL_VIDEO_PATH"
 fi
 
-# If your analysis script generated a text summary, move it too
+# If the analysis script generated a text summary, move it too
 if [ -f "energy_results_summary.txt" ]; then
     mv energy_results_summary.txt "$EXP_DIR/summary.txt"
 fi

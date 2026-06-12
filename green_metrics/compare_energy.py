@@ -8,7 +8,7 @@ import os
 def remove_outliers(data_series, threshold=3.0):
     """
     Uses Median Absolute Deviation (MAD) to calculate a Robust Z-Score.
-    Completely immune to outlier masking from extreme hardware spikes.
+    Immune to outlier masking from extreme hardware spikes.
     """
     median = data_series.median()
     abs_deviation = np.abs(data_series - median)
@@ -60,7 +60,6 @@ def compare_energy(experiments):
                 'significant': None
             })
         
-        # --- RESTORED LINE: Define the baseline reference variable ---
         baseline = processed_data[0]
         
         # --- 2. Print Statistical Comparisons & Store Significance ---
