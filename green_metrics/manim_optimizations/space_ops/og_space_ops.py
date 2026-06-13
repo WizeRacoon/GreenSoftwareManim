@@ -1,4 +1,4 @@
-"""ORIGINAL | Utility functions for two- and three-dimensional vectors."""
+"""Utility functions for two- and three-dimensional vectors."""
 
 from __future__ import annotations
 

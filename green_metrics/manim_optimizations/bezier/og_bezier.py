@@ -1,4 +1,4 @@
-"""ORIGINAL | Utility functions related to Bézier curves."""
+"""Utility functions related to Bézier curves."""
 
 from __future__ import annotations
 

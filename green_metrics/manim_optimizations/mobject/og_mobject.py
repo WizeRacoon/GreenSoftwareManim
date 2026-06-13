@@ -1,4 +1,4 @@
-"""ORIGINAL | Base classes for objects that can be displayed."""
+"""Base classes for objects that can be displayed."""
 
 from __future__ import annotations
 

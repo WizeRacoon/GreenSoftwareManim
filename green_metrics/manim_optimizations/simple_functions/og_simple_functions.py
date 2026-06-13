@@ -1,4 +1,4 @@
-"""ORIGINAL | A collection of simple functions."""
+"""A collection of simple functions."""
 
 from __future__ import annotations
 

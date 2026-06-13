@@ -1,4 +1,4 @@
-"""ORIGINAL | Animations transforming one mobject into another."""
+"""Animations transforming one mobject into another."""
 
 from __future__ import annotations
 

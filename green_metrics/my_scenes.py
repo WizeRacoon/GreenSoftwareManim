@@ -44,3 +44,9 @@ class HeavyScene(ThreeDScene):
         self.set_camera_orientation(phi=60 * DEGREES, theta=45 * DEGREES) 
 
         self.play(DrawBorderThenFill(cube))
+        
+        self.play(
+            Rotate(cube, angle=2 * PI, axis=UP, run_time=3.0),
+            Rotate(cube, angle=2 * PI, axis=RIGHT, run_time=3.0)
+        )
+        self.wait(0.5)

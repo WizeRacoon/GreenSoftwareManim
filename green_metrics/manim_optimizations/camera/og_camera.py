@@ -1,4 +1,4 @@
-"""ORIGINAL | A camera converts the mobjects contained in a Scene into an array of pixels."""
+"""A camera converts the mobjects contained in a Scene into an array of pixels."""
 
 from __future__ import annotations
 

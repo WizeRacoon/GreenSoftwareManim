@@ -1,4 +1,4 @@
-"""ORIGINAL | A camera that can be positioned and oriented in three-dimensional space."""
+"""A camera that can be positioned and oriented in three-dimensional space."""
 
 from __future__ import annotations
 
